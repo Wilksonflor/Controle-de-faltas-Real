@@ -5,6 +5,8 @@ export interface Employee {
   id: number;
   name: string;
   position: string;
+  funcao_nome: string;
+  absences: number;
   attendance: AttendanceRecord[];
 }
 

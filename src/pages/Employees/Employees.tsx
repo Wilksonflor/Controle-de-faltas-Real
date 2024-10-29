@@ -4,7 +4,11 @@ import { Cards } from "../../components/Cards/EmployeesCards";
 import { Button, Input, Select } from "antd";
 import { UserAddOutlined } from "@ant-design/icons";
 import { ModalEmployee } from "../../components/Modal/Modal";
-import { adicionarColaborador, getEmployees } from "../../Services/Api";
+import {
+  adicionarColaborador,
+  getEmployees,
+  getRoles,
+} from "../../Services/Api";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -17,18 +21,32 @@ const Colaboradores: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterRole, setFilterRole] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [roles, setRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const rolesData = await getRoles();
+        setRoles(rolesData.map((role: any) => role.nome));
+      } catch (error) {
+        console.error("Erro ao buscar funções", error);
+      }
+    };
+
+    fetchRoles();
+  }, []);
 
   const fetchColaboradores = async () => {
     try {
       const data = await getEmployees();
-      console.log("Dados dos colaboradores:", data); // Log para verificar dados
+      console.log("Dados dos colaboradores:", data);
 
       const colaboradoresFormatados = data.map((colaborador) => ({
         id: colaborador.id,
         name: colaborador.nome,
-        funcao_nome: colaborador.funcao_nome, // Verifique aqui
+        funcao_nome: colaborador.funcao_nome,
         absences: colaborador.qntd_total,
-        image: "/path/to/default-image.jpg",
+        image: colaborador.image,
       }));
 
       setColaboradores(colaboradoresFormatados);
@@ -41,7 +59,7 @@ const Colaboradores: React.FC = () => {
     try {
       const createdColaborador = await adicionarColaborador(newColaborador);
       setColaboradores((prev) => [...prev, createdColaborador]);
-      setIsModalOpen(false); // Fecha o modal após o cadastro
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Erro ao criar colaborador");
     }
@@ -55,13 +73,13 @@ const Colaboradores: React.FC = () => {
     const filtered = colaboradores.filter(
       (colaborador) =>
         colaborador.name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (filterRole ? colaborador.position === filterRole : true)
+        (filterRole ? colaborador.funcao_nome === filterRole : true)
     );
     setFilteredColaboradores(filtered);
   }, [colaboradores, searchTerm, filterRole]);
 
   return (
-    <div>
+    <section>
       <div
         style={{
           display: "flex",
@@ -88,9 +106,11 @@ const Colaboradores: React.FC = () => {
             style={{ width: 200, marginLeft: 10, marginBottom: 20 }}
           >
             <Option value="">Todos os cargos</Option>
-            <Option value="Developer">Desenvolvedor</Option>
-            <Option value="Designer">Designer</Option>
-            <Option value="Manager">Gerente</Option>
+            {roles.map((role) => (
+              <Option key={role} value={role}>
+                {role}
+              </Option>
+            ))}
           </Select>
         </div>
         <div>
@@ -110,7 +130,7 @@ const Colaboradores: React.FC = () => {
         onOk={(newColaborador) => createColaborador(newColaborador)}
         onCancel={() => setIsModalOpen(false)}
       />
-    </div>
+    </section>
   );
 };
 

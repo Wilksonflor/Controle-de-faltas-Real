@@ -1,8 +1,6 @@
 import React from "react";
 import { Card, Col, Row, Divider, Progress } from "antd";
 import { Employee } from "../../interfaces/Employee";
-// import logoReal from "../../assets/logo real.png";
-// import user from "../../assets/user.png";
 
 const { Meta } = Card;
 
@@ -18,20 +16,30 @@ export const Cards: React.FC<CardsProps> = ({ colaboradores }) => (
           title={colaborador.name}
           bordered={true}
           hoverable
-          // cover={<img alt="Colaborador" src={colaborador.image || user} />}
+          // cover={
+          //   <img
+          //     alt="Colaborador"
+          //     src={colaborador.image || user}
+          //     width={200}
+          //     height={200}
+          //     style={{ objectFit: "cover", borderRadius: 50 }}
+          //   />
+          // }
         >
           <p>
-            <strong>Função:</strong> {colaborador.funcao_nome} {/* Nome da função */}
+            <strong>Função:</strong> {colaborador.funcao_nome}{" "}
+            {/* Nome da função */}
           </p>
 
           <p>
-            <strong>Quantidade Total:</strong> {colaborador.absences} {/* Quantidade de faltas */}
+            <strong>Quantidade de faltas:</strong> {colaborador.absences}{" "}
+            {/* Quantidade de faltas */}
           </p>
 
           <Divider />
 
           <Progress
-            percent={(colaborador.absences / 365) * 100} // Percentual baseado em faltas
+            percent={(colaborador.absences / 365) * 100}
             status="active"
             showInfo={true}
           />

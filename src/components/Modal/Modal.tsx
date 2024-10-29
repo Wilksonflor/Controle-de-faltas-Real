@@ -40,8 +40,8 @@ export const ModalEmployee: React.FC<ModalEmployeeProps> = ({
   };
 
   const handleOk = () => {
-    onOk(formData); // Passa os dados do novo colaborador
-    setFormData({ nome: "", funcao_id: "" }); // Limpa os campos após o envio
+    onOk(formData); 
+    setFormData({ nome: "", funcao_id: "" }); 
   };
 
   return (
@@ -62,10 +62,11 @@ export const ModalEmployee: React.FC<ModalEmployeeProps> = ({
         </Form.Item>
         <Form.Item label="Função">
           <Select
-            value={formData.funcao_id}
-            onChange={handleSelectChange}
             placeholder="Selecione a função"
+            onChange={(value) => handleSelectChange(value)}
+            style={{ width: 200, marginLeft: 10, marginBottom: 20 }}
           >
+            <Select.Option value="">Selecione a função</Select.Option>
             {funcoes.map((funcao: { id: number; nome: string }) => (
               <Select.Option key={funcao.id} value={funcao.id.toString()}>
                 {funcao.nome}
