@@ -9,6 +9,7 @@ import {
   getEmployees,
   getRoles,
 } from "../../Services/Api";
+import styled from "./Employees.module.css";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -39,7 +40,7 @@ const Colaboradores: React.FC = () => {
   const fetchColaboradores = async () => {
     try {
       const data = await getEmployees();
-      console.log("Dados dos colaboradores:", data);
+      // console.log("Dados dos colaboradores:", data);
 
       const colaboradoresFormatados = data.map((colaborador) => ({
         id: colaborador.id,
@@ -80,20 +81,8 @@ const Colaboradores: React.FC = () => {
 
   return (
     <section>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+      <div className={styled.containerInputs}>
+        <div className={styled.controlInputs}>
           <Search
             placeholder="Pesquisar colaborador..."
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -113,17 +102,18 @@ const Colaboradores: React.FC = () => {
             ))}
           </Select>
         </div>
-        <div>
-          <Button
-            icon={<UserAddOutlined />}
-            type="primary"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Adicionar colaborador
-          </Button>
-        </div>
+
+        <Button
+          icon={<UserAddOutlined />}
+          type="primary"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Adicionar colaborador
+        </Button>
       </div>
-      <Cards colaboradores={filteredColaboradores} />
+      <div className={styled.containerCards}>
+        <Cards colaboradores={filteredColaboradores} />
+      </div>
 
       <ModalEmployee
         isOpen={isModalOpen}

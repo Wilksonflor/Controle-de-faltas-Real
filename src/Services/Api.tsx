@@ -33,7 +33,7 @@ export const adicionarColaborador = async (
 
 export const adicionarFalta = async (fouls: Fouls): Promise<Fouls> => {
   try {
-    const { data } = await api.post<Fouls>("/falta/cadastrarFalta", fouls);
+    const { data } = await api.post<Fouls>("/falta/cadastrar", fouls); 
     return data;
   } catch (error: AxiosError | any) {
     console.error("Erro ao adicionar falta:", error.message || error);
@@ -43,8 +43,8 @@ export const adicionarFalta = async (fouls: Fouls): Promise<Fouls> => {
 
 export const getRoles = async () => {
   try {
-    const response = await axios.get("http://localhost:3000/funcao"); 
-    console.log("Funções:", response.data); 
+    const response = await axios.get("http://localhost:3000/funcao");
+    console.log("Funções:", response.data);
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar funções:", error);

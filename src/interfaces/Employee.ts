@@ -18,7 +18,9 @@ export interface AttendanceRecord {
 
 // interface Fouls
 export interface Fouls {
-  employeeId: number; // Mantenha 'number' ou altere para 'string' conforme necessário
+  employeeId: number;
   date: string;
-  reason?: string;
+  days: number;
+  excused: boolean;
 }
+
