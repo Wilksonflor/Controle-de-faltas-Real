@@ -1,10 +1,10 @@
-// components/Details/ColaboradorDetalhes.tsx
-
-import React, { useState } from "react";
-import { Modal, Button, List, message } from "antd";
+import React, { useState, useEffect } from "react";
+import { Modal, Button, List, message, Typography, Empty, Divider } from "antd";
 import FaltaModal from "../components/Modal/Falta";
-import { adicionarFalta } from "../Services/Api";
-import { Employee } from "../interfaces/Employee";
+import { adicionarFalta, getFouls } from "../Services/Api";
+import { Employee, Fouls } from "../interfaces/Employee";
+
+const { Title, Text, Paragraph } = Typography;
 
 interface ColaboradorDetalhesProps {
   colaborador: Employee;
@@ -18,6 +18,37 @@ const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
   onClose,
 }) => {
   const [isFaltaModalOpen, setIsFaltaModalOpen] = useState(false);
+  const [absences, setAbsences] = useState<Fouls[]>([]);
+  const [totalAbsences, setTotalAbsences] = useState(0);
+
+  // Função para buscar as faltas do colaborador
+  const fetchFaltas = async () => {
+    try {
+      const faltas = await getFouls(colaborador.id);
+
+      // Ordenar as faltas por data (do mais recente para o mais antigo)
+      const sortedFaltas = faltas.sort(
+        (a, b) =>
+          new Date(b.data_falta).getTime() - new Date(a.data_falta).getTime()
+      );
+
+      setAbsences(sortedFaltas);
+
+      const totalDias = sortedFaltas.reduce(
+        (sum, falta) => sum + Number(falta.dias),
+        0
+      );
+      setTotalAbsences(totalDias);
+    } catch (error: any) {
+      console.log("Erro ao carregar dados", error);
+    }
+  };
+
+  useEffect(() => {
+    if (colaborador.id) {
+      fetchFaltas();
+    }
+  }, [colaborador.id]);
 
   const handleFaltaSubmit = async (faltaData: {
     colaboradorId: number;
@@ -26,9 +57,10 @@ const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
     abonada: boolean;
   }) => {
     try {
-      await adicionarFalta(faltaData); // Corrigido: faltaData como parâmetro
+      await adicionarFalta(faltaData);
       message.success("Falta registrada com sucesso!");
-      setIsFaltaModalOpen(false); // Fechar modal após sucesso
+      setIsFaltaModalOpen(false);
+      fetchFaltas();
     } catch (error) {
       message.error("Erro ao registrar falta.");
     }
@@ -51,26 +83,41 @@ const ColaboradorDetalhes: React.FC<ColaboradorDetalhesProps> = ({
           Adicionar Falta
         </Button>,
       ]}
+      style={{ maxWidth: "600px" }}
     >
-      <p>
-        <strong>Função:</strong> {colaborador.funcao_nome}
-      </p>
-      <p>
-        <strong>Faltas:</strong>
-      </p>
-      <List
-        dataSource={colaborador.absencesDetails || []}
-        renderItem={(falta) => (
-          <List.Item>
-            <List.Item.Meta
-              title={`Data: ${falta.dataFalta}`}
-              description={`Dias: ${falta.dias}, Abonada: ${
-                falta.abonada ? "Sim" : "Não"
-              }`}
-            />
-          </List.Item>
+      {/* Conteúdo interno com scroll */}
+      <div
+        style={{ maxHeight: "400px", overflowY: "auto", paddingRight: "8px" }}
+      >
+        <Paragraph>
+          <Text strong>Função:</Text> {colaborador.funcao_nome}
+        </Paragraph>
+        <Paragraph>
+          <Text strong>Total de Faltas (dias):</Text> {totalAbsences}
+        </Paragraph>
+
+        <Title level={5}>Detalhes das Faltas</Title>
+        <Divider />
+        {absences.length > 0 ? (
+          <List
+            dataSource={absences}
+            renderItem={(falta) => (
+              <List.Item>
+                <List.Item.Meta
+                  title={`Data: ${new Date(falta.data_falta).toLocaleDateString(
+                    "pt-BR"
+                  )}`}
+                  description={`Dias: ${falta.dias}, Abonada: ${
+                    falta.abonada ? "Sim" : "Não"
+                  }`}
+                />
+              </List.Item>
+            )}
+          />
+        ) : (
+          <Empty description="Nenhuma falta registrada." />
         )}
-      />
+      </div>
 
       {isFaltaModalOpen && (
         <FaltaModal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, DatePicker, Checkbox, Tag } from "antd";
-import moment, { Moment } from "moment";
+import { Modal, Form, Input, DatePicker, Checkbox, Tag, message } from "antd";
+import dayjs, { Dayjs } from "dayjs";
 import { adicionarFalta } from "../../Services/Api";
 import { Fouls } from "../../interfaces/Employee";
 
@@ -22,16 +22,16 @@ const FaltaModal: React.FC<FaltaModalProps> = ({
   onCancel,
   colaboradorId,
 }) => {
-  const [dataFalta, setDataFalta] = useState<Moment | null>(null);
+  const [dataFalta, setDataFalta] = useState<Dayjs | null>(null);
   const [dias, setDias] = useState<number>(0);
   const [abonada, setAbonada] = useState<boolean>(false);
   const [dataVolta, setDataVolta] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Estado para controle de requisição
 
   useEffect(() => {
     // Atualiza a data de volta ao alterar `dataFalta` ou `dias`
     if (dataFalta && dias > 0) {
-      // Calcula a data de volta com base na data selecionada no DatePicker
-      const calculatedReturnDate = moment(dataFalta).add(dias, "days");
+      const calculatedReturnDate = dataFalta.add(dias, "days");
       setDataVolta(calculatedReturnDate.format("DD/MM/YYYY"));
     } else {
       setDataVolta("");
@@ -39,22 +39,33 @@ const FaltaModal: React.FC<FaltaModalProps> = ({
   }, [dataFalta, dias]);
 
   const handleOk = async () => {
-    if (dataFalta) {
-      // Verifica se a data foi selecionada
+    if (dataFalta && !isSubmitting) {
       try {
+        setIsSubmitting(true);
+
         const faltaData: Fouls = {
           employeeId: colaboradorId,
-          date: dataFalta.format("YYYY-MM-DD"), // Formata a data corretamente
+          date: dataFalta.format("YYYY-MM-DD"),
           days: dias,
           excused: abonada,
         };
-        await adicionarFalta(faltaData); // Envia ao backend
-        onOk(faltaData); // Notifica `ColaboradorDetalhes`
+
+        await adicionarFalta(faltaData);
+        message.success("Falta adicionada com sucesso");
+        setDataFalta(null);
+        setDias(0);
+        setAbonada(false);
+        setDataVolta("");
+        onCancel();
+
+        // console.log("Falta registrada com sucesso.");
       } catch (error) {
         console.error("Erro ao cadastrar falta:", error);
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
-      console.error("Data de falta não selecionada.");
+      console.error("Data de falta não selecionada ou já em envio.");
     }
   };
 
@@ -64,12 +75,19 @@ const FaltaModal: React.FC<FaltaModalProps> = ({
       open={isOpen}
       onOk={handleOk}
       onCancel={onCancel}
+      okButtonProps={{ disabled: isSubmitting }} // Desabilita o botão "Ok" enquanto estiver enviando
     >
       <Form layout="vertical">
         <Form.Item label="Data da Falta">
           <DatePicker
             format="DD/MM/YYYY"
-            onChange={(date) => setDataFalta(date)}
+            onChange={(date) => {
+              setDataFalta(date);
+              console.log(
+                "Data selecionada:",
+                date ? date.format("YYYY-MM-DD") : null
+              );
+            }}
           />
         </Form.Item>
         <Form.Item label="Quantidade de Dias">

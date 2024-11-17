@@ -31,12 +31,18 @@ export const adicionarColaborador = async (
   }
 };
 
-export const adicionarFalta = async (fouls: Fouls): Promise<Fouls> => {
+export const adicionarFalta = async (faltaData: Fouls) => {
   try {
-    const { data } = await api.post<Fouls>("/falta/cadastrar", fouls); 
-    return data;
-  } catch (error: AxiosError | any) {
-    console.error("Erro ao adicionar falta:", error.message || error);
+    const response = await axios.post("http://localhost:3000/falta/cadastrar", {
+      colaborador_id: faltaData.employeeId,
+      data_falta: faltaData.date,
+      dias: faltaData.days,
+      abonada: faltaData.excused,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao adicionar falta:", error);
     throw error;
   }
 };
@@ -49,5 +55,18 @@ export const getRoles = async () => {
   } catch (error) {
     console.error("Erro ao buscar funções:", error);
     return [];
+  }
+};
+
+export const getFouls = async (colaboradorId: number) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/colaborador/colaboradorDetails/${colaboradorId}`
+    );
+    console.log("resposta", response.data);
+    return response.data;
+  } catch (error) {
+    console.log("Erro ao buscar faltas:", error);
+    throw error;
   }
 };
